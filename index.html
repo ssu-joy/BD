@@ -1257,7 +1257,7 @@ const _b=burst;burst=function(){_b();setTimeout(()=>sfx('applause'),250)};
 /* ===== 편지가 화면 안에 쏙 들어오게 ===== */
 (function(){const L=$('#letter');function fit(){if(!L||L.style.display==='none'||!L.offsetHeight||$('#lv').classList.contains('on'))return;if(L.getAnimations().some(a=>a.playState==='running'))return;
  const sh=st.clientHeight,lh=L.offsetHeight,s=Math.min(1,sh*.94/lh),v=s<.995?s.toFixed(3):'';if(L.style.scale!==v)L.style.scale=v;
- const r=L.getBoundingClientRect(),q=st.getBoundingClientRect(),cur=parseFloat((L.style.translate||'0 0').split(' ')[1])||0,dy=Math.round(cur+((q.top+q.height/2)-(r.top+r.height/2)));const tv=Math.abs(dy)>2?'0px '+dy+'px':'';if(L.style.translate!==tv)L.style.translate=tv}
+ const r=L.getBoundingClientRect(),q=st.getBoundingClientRect(),cur=parseFloat((L.style.translate||'0 0').split(' ')[1])||0,dy=Math.round(cur+((q.top+q.height/2)-(r.top+r.height/2)));const tv=Math.abs(dy)>2?'0px '+dy+'px':'';if(L.style.translate!==tv&&Math.abs(dy-cur)>6)L.style.translate=tv}
 setInterval(fit,700);addEventListener('resize',()=>setTimeout(fit,60));addEventListener('orientationchange',()=>setTimeout(fit,300))})();
 </script>
 <style>.rot .rph{width:30px;height:30px;vertical-align:-9px;margin-right:6px;overflow:visible}.rot .rpg{transform-box:fill-box;transform-origin:50% 50%;animation:rpr 2.4s ease-in-out infinite}@keyframes rpr{0%,20%{rotate:-90deg}50%,100%{rotate:0deg}}</style>
@@ -1588,4 +1588,37 @@ const _t=giantTap;giantTap=function(){const was=ph;_t.apply(this,arguments);if(w
 const _bt=boyThrow;boyThrow=function(cb){const big=ph==='PAPER_AIRPLANE';B().getAnimations().forEach(a=>{if(a.effect&&a.effect.getTiming().fill==='forwards')a.cancel()});_bt(cb);if(big){sb(2);later(()=>{if(ph==='PAPER_AIRPLANE')sb(4)},800)}};
 })();
 </script>
+<style>
+/* ===== 마지막 장면: 편지는 한 번만 부드럽게 이동 ===== */
+body.fin #letter.fz{left:46%!important;margin-left:-13cqw!important;scale:.8!important}
+body.fin #letter.fz.go{transition:left 1.1s ease-in-out,margin-left 1.1s ease-in-out,scale 1.1s ease-in-out,translate 1.1s ease-in-out!important}
+</style>
+<script>
+(function(){
+const L=$('#letter');
+function settle(){if(ph!=='COMPLETE'||L.classList.contains('fz'))return;
+ L.style.transition='none';L.classList.add('fz');void L.offsetWidth;
+ const r=L.getBoundingClientRect(),q=st.getBoundingClientRect(),cur=parseFloat((L.style.translate||'0 0').split(' ')[1])||0,dy=Math.round(cur+((q.top+q.height/2)-(r.top+r.height/2)));
+ const tv=Math.abs(dy)>2?'0px '+dy+'px':'';
+ L.classList.remove('fz');void L.offsetWidth;L.style.transition='';
+ requestAnimationFrame(()=>{L.classList.add('fz','go');L.style.translate=tv;setTimeout(()=>L.classList.remove('go'),1300)})}
+const _c=complete;complete=function(){_c.apply(this,arguments);setTimeout(settle,700)};
+const _sh=shake;shake=function(){if(ph==='COMPLETE')return;return _sh.apply(this,arguments)};
+const _r=reset;reset=function(){L.classList.remove('fz','go');L.style.translate='';return _r.apply(this,arguments)};
+})();
+</script>
+<style>
+/* ===== 주소창이 나왔다 들어가도 화면 크기 고정 ===== */
+@supports (height:100svh){#st,#bvw{width:min(100vw,calc(100svh*16/9))!important}}
+@supports (height:100svh){@media(orientation:portrait){#bvw{height:100svh!important;width:100vw!important}}}
+</style>
+<script>
+/* ===== 화면 크기 잠금: 주소창·앱 화면이 살짝 바뀌어도 흔들리지 않게 ===== */
+(function(){const r=document.documentElement;let W=0,H=0;
+function set(){const w=innerWidth,h=innerHeight,sw=Math.floor(Math.min(w,h*16/9));r.style.setProperty('--sw',sw+'px');r.style.setProperty('--st',Math.max(0,Math.floor((h-sw*9/16)/2))+'px');W=w;H=h}
+function chk(){const w=innerWidth,h=innerHeight;if(w!==W||Math.abs(h-H)/H>.25)set()}
+set();addEventListener('resize',chk);addEventListener('orientationchange',()=>setTimeout(set,300));
+document.addEventListener('fullscreenchange',()=>setTimeout(set,200));document.addEventListener('webkitfullscreenchange',()=>setTimeout(set,200));})();
+</script>
+<style>#st,#bvw{width:var(--sw,min(100vw,calc(100svh*16/9)))!important}@media(orientation:landscape){body{align-items:flex-start!important}#st{margin-top:var(--st,0px)!important}}</style>
 </body></html>
